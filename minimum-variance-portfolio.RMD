@@ -1,0 +1,24 @@
+---
+title: "Minimum Variance Portfolio"
+author: "Philipp Jung"
+date: "January 17, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Minimum Variance Portfolio
+
+## Data
+The data being used is provided by Kenneth French. The well known dataset '10 Industry Portfolios' contains 10 portfolios of different US-companies.
+
+![Explanation 10 Industry Portfolios](10-industry-portfolio-explanation.png)
+
+### Loading the data
+Read 'average value weighted returns (monthly)' from line 12 to line 1121
+```{r 10-industry-portfolios}
+dat = read.csv('10_Industry_Portfolios.CSV', header=TRUE, sep=',', skip = 11, nrows = 1109)
+head(dat)
+tail(dat)
+```
