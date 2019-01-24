@@ -47,16 +47,18 @@ nRows = dim(return_matrix)[1] # no of months
 M = 120 # size of rolling-sample
 t = M + 1 # adjust t_0 to size of rolling-sample
 mu = c() # empty vector of excess-return
-while (t <= nRows) {
+while (t <= nRows-1) {
   tStart = t - M # lower barrier for the time-interval
   tEnd = t # upper barrier for the time-interval
   return_matrix_t = return_matrix[c(tStart:tEnd),] # return matrix for time-interval
+  return_matrix_future = return_matrix[c(tEnd+1),] # return matrix one month in the future
   cov_return_matrix_t = cov(return_matrix_t[,-1]) # calculate cov-matrix
   b_t = vector(length=nA) + 1 # set up system of equations
   x_t = solve(cov_return_matrix_t, b_t) # and solve it
   x_t = x_t/sum(x_t) # normalize weights
-  mu = c(mu, x_t %*% as.numeric(return_matrix_t[1,-1])) # get out-of-sample excess return for time T
+  mu = c(mu, x_t %*% as.numeric(return_matrix_future[1,-1])) # get out-of-sample excess return for time T
   t = t+1
 }
+mu
 mean(mu)
 ```
