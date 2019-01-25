@@ -1,6 +1,7 @@
 ---
 title: "SPL presentation"
-output: html_notebook
+output:
+  pdf_document: default
 ---
 # Minimum Variance Portfolio
 
@@ -13,7 +14,6 @@ The data being used is provided by Kenneth French. The well known dataset '10 In
 Read 'average value weighted returns (monthly)' from line 12 to line 1121
 ```{r 10-industry-portfolios}
 return_matrix = read.csv('10_Industry_Portfolios.CSV', header=TRUE, sep=',', skip = 11, nrows = 1109)
-head(return_matrix)
 ```
 
 ## Computing the Covariance Matrix
@@ -21,11 +21,13 @@ As we saw in the section above, to minimize the overall variance, we first need 
 ```{r}
 nA = dim(return_matrix[,-1])[2] # number of assets
 cov_return_matrix = cov(return_matrix[,-1]) # dates are deleted
+cov_return_matrix
 ```
 All positive values in the cov_return_matrix, meaning there is at least some linear relation between all the values. 
 
-Above equation is of form
-$$A \cdot x = b$$, thus a system of linear differential equations. Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x = R_t$ the 
+By evaluating the restrictions and definitions of the minimization-problem, you can define a Lagrangian, which can later be transposed into a linear system of equations of form
+$$A \cdot x = b.$$ 
+Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x = w_t.$
 
 ```{r}
 b = vector(length=nA) + 1
@@ -56,9 +58,10 @@ while (t <= nRows-1) {
   b_t = vector(length=nA) + 1 # set up system of equations
   x_t = solve(cov_return_matrix_t, b_t) # and solve it
   x_t = x_t/sum(x_t) # normalize weights
-  mu = c(mu, x_t %*% as.numeric(return_matrix_future[1,-1])) # get out-of-sample excess return for time T
+  # get out-of-sample excess return for time T
+  mu = c(mu, x_t %*% as.numeric(return_matrix_future[1,-1]))
   t = t+1
 }
-mu
+head(mu)
 mean(mu)
 ```
