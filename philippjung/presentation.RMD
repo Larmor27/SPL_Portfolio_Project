@@ -13,15 +13,15 @@ The data being used is provided by Kenneth French. The well known dataset '10 In
 ### Loading the data
 Read 'average value weighted returns (monthly)' from line 12 to line 1121
 ```{r 10-industry-portfolios}
-return_matrix = read.csv('10_Industry_Portfolios.CSV', header=TRUE, sep=',', skip = 11, nrows = 1109)
+return_matrix = read.csv('Average_value_weighted_inklsv_US.csv', header=TRUE, sep=',')
 ```
 
 ## Computing the Covariance Matrix
 As we saw in the section above, to minimize the overall variance, we first need to compute the covariance matrix. This can be achieved by applying the cov() function to the rows (t-th row for time t) of return_matrix.
 ```{r}
-nA = dim(return_matrix[,-1])[2] # number of assets
-cov_return_matrix = cov(return_matrix[,-1]) # dates are deleted
-cov_return_matrix
+benchmark_matrix = data.matrix(return_matrix)
+nA = dim(benchmark_matrix[,-1])[2] # number of assets
+cov_benchmark_matrix = cov(benchmark_matrix[,-1]) # dates are deleted
 ```
 All positive values in the cov_return_matrix, meaning there is at least some linear relation between all the values. 
 
@@ -31,9 +31,14 @@ Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x 
 
 ```{r}
 b = vector(length=nA) + 1
-x = solve(cov_return_matrix, b)
-x = x/sum(x)
-x
+weights = solve(cov_benchmark_matrix, b)
+weights = weights/abs(sum(weights))
+mean_returns = data.matrix(apply(benchmark_matrix[,-1], 2, mean))
+weights = data.matrix(weights)
+mean_returns
+cov_benchmark_matrix
+sharpe_ratio_IS = t(mean_returns) %*% weights / sqrt(t(weights)%*%cov_benchmark_matrix%*%weights)
+sharpe_ratio_IS
 ```
 Note that negative weights are interpreted as *short sales*.
 
@@ -54,14 +59,49 @@ while (t <= nRows-1) {
   tEnd = t # upper barrier for the time-interval
   return_matrix_t = return_matrix[c(tStart:tEnd),] # return matrix for time-interval
   return_matrix_future = return_matrix[c(tEnd+1),] # return matrix one month in the future
-  cov_return_matrix_t = cov(return_matrix_t[,-1]) # calculate cov-matrix
+  cov_return_matrix_t = cov(data.matrix(return_matrix_t[,-1])) # calculate cov-matrix
   b_t = vector(length=nA) + 1 # set up system of equations
   x_t = solve(cov_return_matrix_t, b_t) # and solve it
   x_t = x_t/sum(x_t) # normalize weights
+  if(t == M+1) {
+    historyOfWeights = data.frame(t(x_t)) # create df
+  }
+  else {
+    historyOfWeights = rbind(historyOfWeights, x_t) # save weights
+  }
   # get out-of-sample excess return for time T
   mu = c(mu, x_t %*% as.numeric(return_matrix_future[1,-1]))
   t = t+1
 }
 head(mu)
 mean(mu)
+View(historyOfWeights)
+```
+
+
+## Plotting
+Alla proposed differend kinds of plotting to us, two of them being a portfolio appreciation graph and the dynamics of weights. 
+
+### portfolio appreciation graph
+```{r}
+library('zoo')
+library('xts')
+historyOfReturns = cumsum(mu) + 100
+View(historyOfReturns)
+
+toXts = data.frame(return_matrix[122:length(return_matrix[,1]),1], historyOfReturns)
+colnames(toXts) = c('Date', 'Out-of-sample returns')
+toXts$Date = as.yearmon(as.character(toXts$Date), format="%Y%m")
+portfolio_appreciation = as.xts(toXts$`Out-of-sample returns`, order.by=toXts$Date)
+plot(portfolio_appreciation, type='l') 
+```
+
+### Dynamics of weights
+```{r}
+weightsHistoryDf = data.frame(return_matrix[122:dim(return_matrix)[1],1], historyOfWeights)
+View(weightsHistoryDf)
+colnames(weightsHistoryDf)[1] <- "Date"
+weightsHistoryDf$Date = as.yearmon(as.character(weightsHistoryDf$Date), format="%Y%m")
+weightsHistoryXts = as.xts(weightsHistoryDf[,-1], order.by=weightsHistoryDf$Date)
+plot(weightsHistoryXts, type='l') 
 ```
