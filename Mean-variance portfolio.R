@@ -1,4 +1,3 @@
-setwd("D:\\Portfolio Optimization/Possible Datasets/csv")
 
 data=read.csv("Average_value_weighted_inklsv_US.csv",sep=";",header=TRUE)
 
