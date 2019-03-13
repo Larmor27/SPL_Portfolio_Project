@@ -1,0 +1,148 @@
+% !Tex root = Vorlage.tex
+Introduction text to our project.
+
+
+\section{Minimum-Variance-Portfolio}
+An investment strategy based on a Minimum Variance Portfolio seeks to minimize the risk of an investment. There is thus no desired target-return or stock-forecast to be considered. The portfolio optimization process can be described as pure risk-minimization, where the goal is a determination of the weight-distribution yielding the lowest possible risk at any time. Graphically, one can think of a Minimum Variance Portfolio as the most left point of the mean-variance-frontier.
+
+\subsection{Theory}
+As written in the paper by DeMiguel et al.\cite{DEM09}, the weights were chosen according to the portfolio that minimizes the variance of return, e.g. 
+
+\begin{equation} \label{eq:1}
+\min_{w_t} w_t^{\perp}\Sigma_{t}w_{t}
+\end{equation}
+
+under the restriction that 
+
+\begin{equation} \label{eq:2}
+1_{N}^{\perp}w_{t} \overset{!}{=} 1
+\end{equation}
+
+and
+
+\begin{equation} \label{eq:3}
+\Sigma_t w_t \overset{!}{=} 1,
+\end{equation}
+
+where $w_t \in \mathbb{R}^{N}$ is the weight-vector at time $t \in \lbrace 1, 2, \dots, T \rbrace$ with $T \in \mathbb{N}$ period under observation and $N \in \mathbb{N}$ number of assets considered. $\Sigma_t \in \mathbb{N \times N}$ names the covariance matrix of excess-returns $R_{\tau} \in \mathbb{R}^{N \times \tau}$ at time $t$ for a subset $\tau$ of the period of Observation $\tau \subseteq \lbrace 1, 2, \dots, T \rbrace$. In the equation above, 1 is thought of as the N-dimensional vector containing 1s. \\
+
+We now want to investigate the restriction $\min_{w_t}$for one fixed time-period T, such that $\tau = T$. As a result, weights are not time-dependent anymore. Note that when constructing a Minimum Variance Portfolio, weights are in fact time-dependent. However, for the sake of legibility, we will for now treat the case where $w_t = w$.\\
+
+Considering three risky assets and a weight vector $w \in \mathbb{R}^{3}$, such that 
+\begin{equation}
+  w = \begin{pmatrix}w_1\\w_2\\w_3\end{pmatrix},
+\end{equation}
+the minimal variance restraint can then be interpreted as follows\cite[p.~7]{ZIV13}:
+\begin{equation} \label{eq:4}
+  \begin{split}
+    \min_{w_1, w_2, w_3} \sigma^2_{w_1, w_2, w_3} = & w^2_1 \sigma^2_1 + w^2_2 \sigma^2_2 + w^2_3 \sigma^2_3 + \\ & 2w_1w_2 \sigma_{12} + 2w_1w_3\sigma_{13} + 2w_2w_3\sigma_{23}
+  \end{split}
+\end{equation}
+Here, the components' variance $\sigma^2_{i}$ and standard deviation $\sigma_{i,j}$ for $i,j \in \lbrace 1, 2, 3 \rbrace$ are used to describe the relationship. The Lagrange-function of this problem can be written as 
+\begin{equation} \label{eq:5}
+  \begin{split}
+    L(w_1, w_2, w_3, \lambda) = & w^2_1 \sigma^2_1 + w^2_2 \sigma^2_2 + w^2_3 \sigma^2_3 + \\ & 2w_1w_2 \sigma_{12} + 2w_1w_3\sigma_{13} + 2w_2w_3\sigma_{23} \\
+    + & \lambda(w_1 + w_2 + w_3 - 1)
+  \end{split}
+\end{equation}
+
+Now, the component-wise deviates can be found and be set to equal zero, yielding the first order conditions.
+
+\begin{equation} \label{eq:6}
+  \begin{split}
+    0 &= \frac{\partial L}{\partial w_1} = 2 w_1 \sigma^2_1 + 2 w_2 \sigma_{12} + 2 w_3 \sigma_{12} + \lambda \\
+    0 &= \frac{\partial L}{\partial w_2} = 2 w_2 \sigma^2_2 + 2 w_1 \sigma_{12} + 2 w_3 \sigma_{23} + \lambda \\
+    0 &= \frac{\partial L}{\partial w_3} = 2 w_3 \sigma^2_3 + 2 m_1 \sigma_{13} + 2 w_2 \sigma_{23} + \lambda \\
+    0 &= \frac{\partial L}{\partial \lambda} = w_1 + w_2 + w_3 - 1
+  \end{split}
+\end{equation}
+
+In this, $\lambda$ is the Lagrange multiplier. Equation \ref{eq:6} can be expressed as a system of linear equations:
+
+\begin{equation} \label{eq:7}
+  \begin{pmatrix}
+    2\sigma_1^2 & 2\sigma_{12} & 2\sigma_{13} & 1 \\
+    2\sigma_{12} & 2\sigma_{2}^2 & 2\sigma_{23} & 1 \\
+    2\sigma_{13} & 2\sigma_{23} & 2\sigma_{3}^{2} & 1 \\
+    1 & 1 & 1 & 0 
+  \end{pmatrix}
+  \begin{pmatrix}
+    w_1 \\ w_2 \\ w_3 \\ \lambda
+  \end{pmatrix}
+   =
+   \begin{pmatrix}
+    0 \\ 0 \\ 0 \\ 1
+   \end{pmatrix}
+\end{equation}
+
+Now we can clearly see that the equation has the form of
+
+\begin{equation}
+  \begin{pmatrix}
+    2 \Sigma & 1 \\
+    1^\top & 0
+  \end{pmatrix}
+  \begin{pmatrix}
+    w \\ \lambda
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+  0 \\ 1
+  \end{pmatrix},
+\end{equation}
+
+where $\Sigma$ is just the covariance-matrix of the matrix of excess-returns $R_{\tau}$.
+
+
+\subsection{Solving the system of linear equations}
+Above equation is of form
+
+\begin{equation}
+  A \cdot x = b,
+\end{equation}
+
+thus a system of linear differential equations. Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x = w_t$ the weight-vector at time t. Note that the weight-vector \textbf{x} may contain negative which are smaller than zero. These negative weights are interpreted as short sales\footnote{\url{https://en.wikipedia.org/wiki/Short_(finance)}}. While short sales are in reality strongly regulated and restricted, the Minimum Variance Portfolio created in this work will not consider any restrictions.
+
+\subsection{Implementation}
+In this section we want to display and discuss the implementation of the approach described in the previous chapter in the R programming language. We will compute several performance measures of the Minimal Variance Portfolio we're about to derive from the data.
+
+\subsection{Datasets and data preparation}
+The first dataset upon which this analysis is based is called "Ten sector portfolios of the S\&P 500 and the US equity market portfolio". It has been created by Roberto Wessels and was obtained from Mendeley Data\footnote{Data can be downloaded \href{https://data.mendeley.com/datasets/ndxfrshm74/3}{here}. It's also attached to this report.}. Note that for this dataset, it is necessary to substract the Treasury Bill-rates from each entry to obtain adjusted returns stripped of the risk-free rate.\\
+
+The other dataset concerned is provided by Kenneth French and downloaded from his website\footnote{The dataset from Kenneth Frenchs' website can be downloaded \href{http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip}{here} and is also attached to this report.}. The dataset is called "SMB and HML portfolios and the US equity market portfolio" and contains the factors "Small Minus Big" (SMB) and "High Minus Low" (HMB) from the Fama-French three-factor model as well as the whole S\&P500 portfolio. This dataset is already cleared from the risk-free rate, thus a Treasure Bill-rate adjustment is not necessary.
+
+\subsubsection{Computing the Covariance Matrix}
+As we saw in the section above, to minimize the overall variance, we first need to compute the covariance matrix. This can be achieved by applying the cov() function to the rows (t-th row for time t) of the matrix of excess-returns called 'return\_matrix'.\\
+The following lines of R-Code do just this.
+\begin{lstlisting}[frame=single]
+b = vector(length=nA) + 1
+x = solve(cov_return_matrix, b)
+x = x/sum(x)
+\end{lstlisting}
+
+\begin{lstlisting}[frame=single]
+# computes the covariance_matrix from the matrix of
+# excess-returns, excluding the date-column
+cov_return_matrix = cov(return_matrix[,-1])
+\end{lstlisting}
+\subsection{Discussion}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+
+\section{Bayes-Stein-Portfolio}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Theory}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Execution}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Discussion}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+\section{Sample-based mean-variance-Portfolio}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Theory}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Execution}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\subsection{Discussion}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
