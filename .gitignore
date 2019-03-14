@@ -1,3 +1,9 @@
 *.log
 *.dat
 *.aux
+*.synctex.gz
+*.out
+*.fdb_latexm
+*.blg
+*.bcf
+*.fls

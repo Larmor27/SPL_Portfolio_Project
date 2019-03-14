@@ -1976,6 +1976,7 @@
   <bcf:section number="0">
     <bcf:citekey order="1">DEM09</bcf:citekey>
     <bcf:citekey order="2">ZIV13</bcf:citekey>
+    <bcf:citekey order="3">DEM09</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="anyt">

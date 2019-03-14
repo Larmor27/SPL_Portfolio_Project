@@ -77,7 +77,7 @@ In this, $\lambda$ is the Lagrange multiplier. Equation \ref{eq:6} can be expres
 
 Now we can clearly see that the equation has the form of
 
-\begin{equation}
+\begin{equation} \label{eq:8}
   \begin{pmatrix}
     2 \Sigma & 1 \\
     1^\top & 0
@@ -97,34 +97,64 @@ where $\Sigma$ is just the covariance-matrix of the matrix of excess-returns $R_
 \subsection{Solving the system of linear equations}
 Above equation is of form
 
-\begin{equation}
+\begin{equation} \label{eq:9}
   A \cdot x = b,
 \end{equation}
 
 thus a system of linear differential equations. Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x = w_t$ the weight-vector at time t. Note that the weight-vector \textbf{x} may contain negative which are smaller than zero. These negative weights are interpreted as short sales\footnote{\url{https://en.wikipedia.org/wiki/Short_(finance)}}. While short sales are in reality strongly regulated and restricted, the Minimum Variance Portfolio created in this work will not consider any restrictions.
 
+\subsection{in-sample sharpe ratio}
+The in-sample sharpe ratio for one strategy $k$ is a basic measure of performance. Only one weights-vector is computed for all results. According to DeMiguel et al. \cite[p. 1928]{DEM09} it can be computed by
+\begin{equation} \label{eq:10}
+\widehat{SR}^{IS}_{k} = \frac{\hat{\mu}^{IS\perp}_{k}~\hat{w}_k}{\left( \hat{\mu}_k^{\perp}~\Sigma~\hat{\mu}_k\right)^{1/2}}.
+\end{equation}
+Here, $\hat{\mu}^{IS\perp}_{k}$ is the mean-returns vector for strategy $k$, whereas $\Sigma$ is the covariance-matrix of the excess-returns matrix $R$. $\hat{w}_k$ is the mean weights-vector of strategy $k$.
+
 \subsection{Implementation}
 In this section we want to display and discuss the implementation of the approach described in the previous chapter in the R programming language. We will compute several performance measures of the Minimal Variance Portfolio we're about to derive from the data.
 
 \subsection{Datasets and data preparation}
-The first dataset upon which this analysis is based is called "Ten sector portfolios of the S\&P 500 and the US equity market portfolio". It has been created by Roberto Wessels and was obtained from Mendeley Data\footnote{Data can be downloaded \href{https://data.mendeley.com/datasets/ndxfrshm74/3}{here}. It's also attached to this report.}. Note that for this dataset, it is necessary to substract the Treasury Bill-rates from each entry to obtain adjusted returns stripped of the risk-free rate.\\
+The first dataset upon which this analysis is based is called "Ten sector portfolios of the S\&P 500 and the US equity market portfolio". It has been created by Roberto Wessels and was obtained from Mendeley Data\footnote{Data can be downloaded \href{https://data.mendeley.com/datasets/ndxfrshm74/3}{here}. It's also attached to this report.}. Note that for this dataset, it is necessary to substract the Treasury Bill-rates from each entry to obtain adjusted returns stripped of the risk-free rate. We call this dataset \textbf{TSP}.\\
 
-The other dataset concerned is provided by Kenneth French and downloaded from his website\footnote{The dataset from Kenneth Frenchs' website can be downloaded \href{http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip}{here} and is also attached to this report.}. The dataset is called "SMB and HML portfolios and the US equity market portfolio" and contains the factors "Small Minus Big" (SMB) and "High Minus Low" (HMB) from the Fama-French three-factor model as well as the whole S\&P500 portfolio. This dataset is already cleared from the risk-free rate, thus a Treasure Bill-rate adjustment is not necessary.
+The other dataset concerned is provided by Kenneth French and downloaded from his website\footnote{The dataset from Kenneth Frenchs' website can be downloaded \href{http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip}{here} and is also attached to this report.}. The dataset is called "SMB and HML portfolios and the US equity market portfolio" and contains the factors "Small Minus Big" (SMB) and "High Minus Low" (HMB) from the Fama-French three-factor model \footnote{For an introduction to the Fama-French three-factor model, see \href{https://en.wikipedia.org/wiki/Fama\%E2\%80\%93French_three-factor_model}{Wikipedia}.} as well as the whole S\&P500 portfolio. We call this dataset short \textbf{SHS} This dataset is already cleared from the risk-free rate, thus a Treasure Bill-rate adjustment is not necessary.
 
-\subsubsection{Computing the Covariance Matrix}
-As we saw in the section above, to minimize the overall variance, we first need to compute the covariance matrix. This can be achieved by applying the cov() function to the rows (t-th row for time t) of the matrix of excess-returns called 'return\_matrix'.\\
-The following lines of R-Code do just this.
-\begin{lstlisting}[frame=single]
+In listing \ref{code:0}, it is showcased how data is imported and loaded into a dataframe. In line 1, the .csv-file containing the data is loaded via the \lstinline|read.csv| function, where a separator as well as the header-parameter are specified. 
+
+\begin{lstlisting}[caption={Loading the data and subtracting the risk-free rate from the columns of returns yields a dataframe containing the matrix of excess-returns.}, label=code:0, frame=single]
+return_matrix = read.csv('../ten-roberto-wessels.csv', header=TRUE, sep=',')
+sub_return_matrix = subset(return_matrix, select = -c(13))
+sub_return_matrix = apply(sub_return_matrix[,-1], 2, '-', return_matrix[,13])
+return_matrix = cbind(return_matrix$Date, sub_return_matrix)
+colnames(return_matrix)[1] = 'Date'
+\end{lstlisting}
+In case of dataset TSP, it is necessary to subtract the risk-free rate from the returns. To do this, a subset of the return\_matrix is created in line 2, excluding the monthly risk-free rate which is stored in column 13 of the return\_matrix. In line 3, the risk-free rate is sutracted from every column the return\_matrix' subset, except for the column containing the date. Line 4 shows the reconstruction of the return\_matrix, now containing risk-free returns. After the dates' column-name has been reset in line 5, the return\_matrix now contains only risk-free returns. 
+
+\subsubsection{Computing the in-sample sharpe ratio}
+A very basic way of measuring portfolio performance is provided by the in-sample sharpe ratio. By setting $\tau = \lbrace 1, 2, \dots, T \rbrace$, the entire time-series is considered when computing the covariance matrix of the matrix of excess-returns $\Sigma_t$, effectively removing the weight-vectors' time-dependency. \\
+
+Following the procedure leading to the system of linear equations in equation\ref{eq:9}, we first compute a covariance matrix of the entire risk-free return-matrix. Line 1 of listing \ref{code:1} does just this, excluding the column containing the time-series dates. A vector of dimension equal to the amount of assets listed in the return\_matrix is constructed, where every component of the vector equals one.\\
+
+\begin{lstlisting}[caption={This example shows how the covariance-matrix of a returns-matrix is computed in R.}, label=code:1, frame=single]
+cov_return_matrix = cov(return_matrix[,-1])
+b = vector(length=nA) + 1
+weights = solve(cov_benchmark_matrix, b)
+weights = weights/abs(sum(weights))
+mean_returns = data.matrix(apply(benchmark_matrix[,-1], 2, mean))
+weights = data.matrix(weights)
+sharpe_ratio_IS = t(mean_returns) %*% weights / sqrt(t(weights)%*%cov_benchmark_matrix%*%weights)
+print(sharpe_ratio_IS)
+\end{lstlisting}
+
+Line 3 of listing \ref{code:1} uses the \lstinline|solve()| function to solve the linear equation by inverting the covariance matrix. The resulting \lstinline|weights|-vector is normalized in line 4. A vector containing the mean-values of \lstinline|return_matrix| is created in line 5 and the \lstinline|weights|-vector is converted to a data.matrix in line 6. This is done to facilitate the vector- and matrix-multiplication performed in line 7 to calculate the in-sample sharpe ratio according to \ref{eq:10}, which is printed in line 7.\\
+
+Listing \ref{code:1} shows the computation of the covariance matrix $\Sigma$ derived from the matrix of excess-returns, named return\_matrix in this example. 
+
+\begin{lstlisting}[caption={Code example shows how to solve a system of linear equations}, label=code:2, frame=single] 
 b = vector(length=nA) + 1
 x = solve(cov_return_matrix, b)
 x = x/sum(x)
 \end{lstlisting}
 
-\begin{lstlisting}[frame=single]
-# computes the covariance_matrix from the matrix of
-# excess-returns, excluding the date-column
-cov_return_matrix = cov(return_matrix[,-1])
-\end{lstlisting}
 \subsection{Discussion}
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
