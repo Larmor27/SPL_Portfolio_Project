@@ -1,15 +1,15 @@
 [0] Config.pm:302> INFO - This is Biber 2.11
 [0] Config.pm:305> INFO - Logfile is 'Vorlage.blg'
-[30] biber:313> INFO - === Sa Mär 16, 2019, 10:18:03
-[58] Biber.pm:371> INFO - Reading 'Vorlage.bcf'
-[144] Biber.pm:857> INFO - Found 2 citekeys in bib section 0
-[166] Biber.pm:3976> INFO - Processing section 0
-[178] Biber.pm:4136> INFO - Looking for bibtex format file 'Bib.bib' for section 0
-[179] bibtex.pm:1489> INFO - LaTeX decoding ...
-[183] bibtex.pm:1305> INFO - Found BibTeX data source 'Bib.bib'
-[212] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[212] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[213] Biber.pm:3804> INFO - Sorting list 'anyt/global//global/global' of type 'entry' with template 'anyt' and locale 'en-US'
-[213] Biber.pm:3810> INFO - No sort tailoring available for locale 'en-US'
-[221] bbl.pm:617> INFO - Writing 'Vorlage.bbl' with encoding 'UTF-8'
-[225] bbl.pm:720> INFO - Output to Vorlage.bbl
+[46] biber:313> INFO - === Sa Mär 16, 2019, 23:07:00
+[85] Biber.pm:371> INFO - Reading 'Vorlage.bcf'
+[193] Biber.pm:857> INFO - Found 2 citekeys in bib section 0
+[213] Biber.pm:3976> INFO - Processing section 0
+[224] Biber.pm:4136> INFO - Looking for bibtex format file 'Bib.bib' for section 0
+[225] bibtex.pm:1489> INFO - LaTeX decoding ...
+[229] bibtex.pm:1305> INFO - Found BibTeX data source 'Bib.bib'
+[259] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[259] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[259] Biber.pm:3804> INFO - Sorting list 'anyt/global//global/global' of type 'entry' with template 'anyt' and locale 'en-US'
+[260] Biber.pm:3810> INFO - No sort tailoring available for locale 'en-US'
+[268] bbl.pm:617> INFO - Writing 'Vorlage.bbl' with encoding 'UTF-8'
+[269] bbl.pm:720> INFO - Output to Vorlage.bbl
