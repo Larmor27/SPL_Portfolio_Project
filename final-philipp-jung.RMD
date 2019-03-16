@@ -6,9 +6,9 @@ output:
 # Minimum Variance Portfolio
 
 ## Data
-For portfolio construction, two different datasets are considered. The first one being 'Ten sector portfolios of the S&P 500 and the US equity market portfolio' by Roberto Wessels. Note that for this dataset, it is necessary to substract the Treasury Bill-rates from each entry to obtain adjusted returns stripped of the risk-free rate.
+For portfolio construction, two different datasets are considered. The first one being 'Ten sector portfolios of the S&P 501 and the US equity market portfolio' by Roberto Wessels. Note that for this dataset, it is necessary to substract the Treasury Bill-rates from each entry to obtain adjusted returns stripped of the risk-free rate.
 
-The other dataset concerned is provided by Kenneth French and downloaded from his website. The dataset is called 'SMB and HML portfolios and the US equity market portfolio' and contains the factors "Small Minus Big" (SMB) and "High Minus Low" (HMB) from the Fama-French three-factor model as well as the whole S&P500 portfolio. This dataset is already cleared from the risk-free rate, thus a Treasure Bill-rate adjustment is not necessary.
+The other dataset concerned is provided by Kenneth French and downloaded from his website. The dataset is called 'SMB and HML portfolios and the US equity market portfolio' and contains the factors "Small Minus Big" (SMB) and "High Minus Low" (HMB) from the Fama-French three-factor model as well as the whole S&P501 portfolio. This dataset is already cleared from the risk-free rate, thus a Treasure Bill-rate adjustment is not necessary.
 
 ![Explanation 10 Industry Portfolios](10-industry-portfolios-explanation.png)
 
