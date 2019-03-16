@@ -1,0 +1,20 @@
+Name of Quantlet:  minVarWeights
+ 
+Published in:      SPL Seminar paper
+  
+Description:       calculates weights of a minimum variance portfolio strategy given a dataframe of returns
+ 
+Keywords:          'financial, portfolio, returns, asset, time-series, minimum variance'
+
+Author:            Philipp Jung
+  
+Submitted:         Sat, March 16 2019 by Philipp Jung
+  
+Datafile:          'ten-robert-wessels.csv, two-plus-one.csv'
+  
+Input:		   'data frame, where first column contains an index (e.g. date) and all other rows contain returns'
+  
+Output:  	   'normalized weights vector'
+  
+Example:  	   'calcMinVarWeights(returns_matrix)'
+  

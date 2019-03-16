@@ -103,12 +103,31 @@ Above equation is of form
 
 thus a system of linear differential equations. Since $A = \Sigma$ and $b = 1$ are known, we can solve this system to obtain $x = w_t$ the weight-vector at time t. Note that the weight-vector \textbf{x} may contain negative which are smaller than zero. These negative weights are interpreted as short sales\footnote{\url{https://en.wikipedia.org/wiki/Short_(finance)}}. While short sales are in reality strongly regulated and restricted, the Minimum Variance Portfolio created in this work will not consider any restrictions.
 
-\subsection{in-sample sharpe ratio}
-The in-sample sharpe ratio for one strategy $k$ is a basic measure of performance. Only one weights-vector is computed for all results. According to DeMiguel et al. \cite[p. 1928]{DEM09} it can be computed by
-\begin{equation} \label{eq:10}
+\subsection{in-sample Sharpe ratio}
+The in-sample Sharpe ratio for one strategy $k$ is a basic measure of performance. Only one weights-vector is computed for all results. According to DeMiguel et al. \cite[p. 1928]{DEM09} it can be computed by
+\begin{equation} \label{eq:in-sample-sharpe}
 \widehat{SR}^{IS}_{k} = \frac{\hat{\mu}^{IS\perp}_{k}~\hat{w}_k}{\left( \hat{\mu}_k^{\perp}~\Sigma~\hat{\mu}_k\right)^{1/2}}.
 \end{equation}
 Here, $\hat{\mu}^{IS\perp}_{k}$ is the mean-returns vector for strategy $k$, whereas $\Sigma$ is the covariance-matrix of the excess-returns matrix $R$. $\hat{w}_k$ is the mean weights-vector of strategy $k$.
+
+\subsection{out-sample Sharpe ratio} \label{subsec:out-sample-sharpe-ratio}
+Computing the out-sample Sharpe ratio, the weights' time-dependency is adressed using a "rolling sample" approach\cite[p.1927]{DEM09}. These "rolling samples" are formed by defining continuous subsets $t_i$ of the original time-series with fixed length of 120 consecutive time-steps, $i \in \lbrace1, 2, \dots, T-120 \rbrace$ where $T$ is the last time-step of the time-series. This time-interval is then shitfted progressively through the entire length of the time-series.\\
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=.50\textwidth]{Bilder/rolling_window.png}
+    \caption{Illustration of the rolling-window approach for a time-series containing seven time-steps filled with mock-data. Five subsets of length 3 divide the time-series.}
+    \label{fig:rolling_window}
+  \end{center}
+\end{figure}
+This approach is schematically described in figure \ref{fig:rolling_window}.\\
+
+Finally, for each subset $t_i$, the weights are computed by solving the system of linear equations as in \ref{eq:9}. Out-of-sample excess returns are then calculated using the actual excess returns of the $i+1$'th time-step in an attempt to validate if a prediction in the past had been successful.\\
+
+Lastly, the out-of-sample returns' arithmetic mean $\hat{\mu}$is devided by its standard deviation $\hat{\sigma}$ to derive the out-of-sample Sharpe ratio like so:
+\begin{equation}\label{eq:out-of-sample-sharpe}
+\hat{SR} = \frac{\hat{\mu}}{\hat{\sigma}}
+\end{equation}
 
 \subsection{Implementation}
 In this section we want to display and discuss the implementation of the approach described in the previous chapter in the R programming language. We will compute several performance measures of the Minimal Variance Portfolio we're about to derive from the data.
@@ -129,34 +148,69 @@ colnames(return_matrix)[1] = 'Date'
 \end{lstlisting}
 In case of dataset TSP, it is necessary to subtract the risk-free rate from the returns. To do this, a subset of the return\_matrix is created in line 2, excluding the monthly risk-free rate which is stored in column 13 of the return\_matrix. In line 3, the risk-free rate is sutracted from every column the return\_matrix' subset, except for the column containing the date. Line 4 shows the reconstruction of the return\_matrix, now containing risk-free returns. After the dates' column-name has been reset in line 5, the return\_matrix now contains only risk-free returns. 
 
-\subsubsection{Computing the in-sample sharpe ratio}
-A very basic way of measuring portfolio performance is provided by the in-sample sharpe ratio. By setting $\tau = \lbrace 1, 2, \dots, T \rbrace$, the entire time-series is considered when computing the covariance matrix of the matrix of excess-returns $\Sigma_t$, effectively removing the weight-vectors' time-dependency. \\
+\subsubsection{Computing the in-sample Sharpe ratio}
+A very basic way of measuring portfolio performance is provided by the in-sample Sharpe ratio. By setting $\tau = \lbrace 1, 2, \dots, T \rbrace$, the entire time-series is considered when computing the covariance matrix of the matrix of excess-returns $\Sigma_t$, effectively removing the weight-vectors' time-dependency. \\
 
-Following the procedure leading to the system of linear equations in equation\ref{eq:9}, we first compute a covariance matrix of the entire risk-free return-matrix. Line 1 of listing \ref{code:1} does just this, excluding the column containing the time-series dates. A vector of dimension equal to the amount of assets listed in the return\_matrix is constructed, where every component of the vector equals one.\\
+Following the procedure leading to the system of linear equations in equation\ref{eq:9}, we first compute a covariance matrix of the entire risk-free return-matrix. Line 1 of listing \ref{code:is-sharpe-ratio} does just this, excluding the column containing the time-series dates. A vector of dimension equal to the amount of assets listed in the return\_matrix is constructed, where every component of the vector equals one.\\
 
-\begin{lstlisting}[caption={This example shows how the covariance-matrix of a returns-matrix is computed in R.}, label=code:1, frame=single]
+\begin{lstlisting}[caption={This example shows how the in-sample Sharpe ratio for a matrix of expected returns, computed in the R programming language.}, label=code:is-sharpe-ratio, frame=single]
 cov_return_matrix = cov(return_matrix[,-1])
 b = vector(length=nA) + 1
 weights = solve(cov_benchmark_matrix, b)
 weights = weights/abs(sum(weights))
 mean_returns = data.matrix(apply(benchmark_matrix[,-1], 2, mean))
 weights = data.matrix(weights)
-sharpe_ratio_IS = t(mean_returns) %*% weights / sqrt(t(weights)%*%cov_benchmark_matrix%*%weights)
-print(sharpe_ratio_IS)
+Sharpe_ratio_IS = t(mean_returns) %*% weights / sqrt(t(weights)%*%cov_benchmark_matrix%*%weights)
+print(Sharpe_ratio_IS)
 \end{lstlisting}
 
-Line 3 of listing \ref{code:1} uses the \lstinline|solve()| function to solve the linear equation by inverting the covariance matrix. The resulting \lstinline|weights|-vector is normalized in line 4. A vector containing the mean-values of \lstinline|return_matrix| is created in line 5 and the \lstinline|weights|-vector is converted to a data.matrix in line 6. This is done to facilitate the vector- and matrix-multiplication performed in line 7 to calculate the in-sample sharpe ratio according to \ref{eq:10}, which is printed in line 7.\\
+Line 3 of listing \ref{code:is-sharpe-ratio} uses the \lstinline|solve()| function to solve the linear equation by inverting the covariance matrix. The resulting \lstinline|weights|-vector is normalized in line 4. A vector containing the mean-values of \lstinline|return_matrix| is created in line 5 and the \lstinline|weights|-vector is converted to a data.matrix in line 6. This is done to facilitate the vector- and matrix-multiplication performed in line 7 to calculate the in-sample Sharpe ratio according to equation \ref{eq:in-sample-sharpe}, which is printed in line 7.\\
 
-Listing \ref{code:1} shows the computation of the covariance matrix $\Sigma$ derived from the matrix of excess-returns, named return\_matrix in this example. 
+\subsection{Computing the out-sample Sharpe ratio} \label{subsec:minVar-out-sample-sharpe}
+For computing the out-sample Sharpe ratio as described in section \ref{subsec:out-sample-sharpe-ratio}, the approach for deriving the in-sample Sharpe ratio needs to be altered to incorporate time-dependency. \\
 
-\begin{lstlisting}[caption={Code example shows how to solve a system of linear equations}, label=code:2, frame=single] 
-b = vector(length=nA) + 1
-x = solve(cov_return_matrix, b)
-x = x/sum(x)
+Considering listing \ref{code:os-sharpe-ratio}, in lines 1 and 2, the number of assets as well as the length of the time-series are assigned respectively. \lstinline|M| contains the length of the rolling-sample, the iterator-variable \lstinline|t| is initialized in line 4 and adjusted to \lstinline|M|.\\
+
+\begin{lstlisting}[caption={Computing the out-sample Sharpe ratio from the matrix of expected returns in R.}, label=code:os-sharpe-ratio, frame=single]
+nA = dim(return_matrix[,-1])[2] # number of assets
+T = dim(return_matrix)[1] # no of months
+M = 120 # size of rolling-sample
+t = M + 1 # adjust t_0 to size of rolling-sample
+while (t <= T - 1) {
+  tStart = t - M 
+  tEnd = t 
+  return_matrix_future = return_matrix[c(tEnd+1),] 
+  cov_return_matrix_t = cov(data.matrix(return_matrix[c(tStart:tEnd),-1])) 
+  b_t = vector(length=nA) + 1 
+  x_t = solve(cov_return_matrix_t, b_t) 
+  x_t = x_t/sum(x_t)
+  
+  if(t == M+1) { 
+    history_of_weights = data.frame(t(x_t))
+    mu = data.frame(return_matrix[,1][t], x_t %*% return_matrix_future[-1])
+  }
+  else {
+    history_of_weights = rbind(history_of_weights, x_t)
+    mu = rbind(mu, data.frame(return_matrix[,1][t], x_t %*% return_matrix_future[-1]))
+  }
+  t = t+1
+}
 \end{lstlisting}
+
+In line 5, the sample gets rolling: By setting a \lstinline|while|-loop, we iterate over the whole time-series. The last date included in the rolling-sample is T-1, since it is the last value for which the expected returns of the next month are known. From line 6 to 12, the weights for time t $x_t$ are computed. They are stored in dataframe mu in line 15 and 19 respectively. Meanwhile, the weights are saved in a dataframe in line 15 and 19.
 
 \subsection{Discussion}
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+To validate the implementations of the minimum-variance portfolio, in this section metrices derived from the data will be compared with results from DeMiguel et al.\cite{DEM09}. Additionally, results will be graphically displayed and compared.\\
+
+\subsubsection{Graphical Analysis}
+As a first graphical display of results, a portfolio appreciation graph is constructed by cumulatively summing the returns and scaling them by a factor 100. Is is similar to having invested 100\$ in a specific portfolio at the beginning of the time-series considered. In figure \ref{fig:appreciation_graph}, the portfolio appreciation graph of the minimum variance portfolio, which has been created in previous chapter \ref{subsec:minVar-out-sample-sharpe}, as well as the portfolio appreciation graph of the naive investing strategy are displayed. When applicating a naive investing strategy as in \cite{DEM09}, the weight-vector $w_{naive}$ is of dimension $N$ and every component of $w_{naive}$ is of value $1/N$, where $N$ is the number of assets considered.
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{Bilder/portfolio-appreciation.png}
+    \caption{Illustration of the rolling-window approach for a time-series containing seven time-steps filled with mock-data. Five subsets of length 3 divide the time-series.}
+    \label{fig:appreciation_graph}
+  \end{center}
+\end{figure}
 
 
 \section{Bayes-Stein-Portfolio}
